@@ -18,7 +18,17 @@ const eslintConfig = [
       '**/node_modules/**/*',       // Ignore node_modules
       '**/.next/**/*',              // Ignore Next.js build output
       '**/dist/**/*',               // Ignore distribution files
-      '**/prisma/**/*'             // Ignore Prisma generated files
+      '**/prisma/**/*',            // Ignore Prisma generated files
+      'src/generated/**/*',         // Specifically ignore src/generated directory
+      '**/index-browser.js',       // Ignore specific Prisma browser files
+      '**/runtime/**/*.js'         // Ignore Prisma runtime files
+    ]
+  },
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.js', 'src/**/*.jsx'],
+    excludeFiles: [
+      'src/generated/**/*',
+      '**/prisma/**/*'
     ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
