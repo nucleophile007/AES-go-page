@@ -164,7 +164,7 @@ function VideoSection() {
       <div className="flex justify-center">
           <button
             onClick={scrollToForm}
-            className={`relative group bg-[#00ff00] hover:bg-[#33ff33] text-black font-bold px-8 py-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_#00ff00] hover:shadow-[0_0_30px_#00ff00] border border-[#00ff00] ${
+            className={`relative group bg-[#00ff00] hover:bg-[#33ff33] text-black font-bold px-8 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_#00ff00] hover:shadow-[0_0_30px_#00ff00] border border-[#00ff00] ${
               isJumping ? "animate-bounce" : ""
             }`}
           >
@@ -172,10 +172,6 @@ function VideoSection() {
               Book Free 60 Min Session - Limited Seats!
               <span className="text-lg">🎓</span>
             </span>
-
-            <div className="absolute inset-0 rounded-full bg-[#00ff00]/30 opacity-75 group-hover:opacity-100 blur-lg transition-all duration-300 -z-10" />
-
-            <div className="absolute inset-0 -m-2 rounded-full bg-[#00ff00]/20 animate-ping opacity-75 -z-20" />
           </button>
         </div>
         
