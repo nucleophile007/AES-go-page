@@ -579,31 +579,21 @@ function TestimonialsSection() {
 
   const testimonials = [
     {
-      name: "Sarah Chen",
-      grade: "12th Grade",
-      college: "Stanford University",
-      text: "Acharya&apos;s college prep program transformed my application. The personalized essay guidance and SAT prep helped me increase my score by 200 points. I got into my dream school!",
+      name: "Eesha's Parent",
+      title: "College Essay Excellence",
+      text: "Our daughter is a now a high school senior. She took college preparatory courses at ACHARYA. I am pleased to say that she really enjoyed working with Shanti Swaroop, who assisted her in writing five essays. His coaching helped her identify and outline her strengths, extra curricular activities, achievements and challenges in the correct format.",
       rating: 5,
     },
     {
-      name: "Michael Rodriguez",
-      grade: "11th Grade",
-      college: "MIT",
-      text: "The mentorship program is incredible. My mentor helped me discover my passion for engineering and guided me through building a portfolio that stood out to admissions officers.",
+      name: "Athreya",
+      title: "Comprehensive College Guidance",
+      text: "I have been working with Shanti Swaroop for about half a year at the time of this testimonial. I attended one of his talks at a stage where he talked about college admissions and what colleges look in a student. Later on, we scheduled a meeting to talk about my college needs and what I should be looking for.",
       rating: 5,
     },
     {
-      name: "Emily Johnson",
-      grade: "12th Grade",
-      college: "Harvard University",
-      text: "I was struggling with my personal statement until I joined Acharya. The unlimited essay revisions and expert feedback made all the difference. Highly recommend!",
-      rating: 5,
-    },
-    {
-      name: "David Park",
-      grade: "12th Grade",
-      college: "UC Berkeley",
-      text: "The weekly check-ins kept me on track throughout the entire application process. The structured approach and timeline management were game-changers for me.",
+      name: "Sahasra",
+      title: "University Selection Success",
+      text: "Dr. Shanti Swaroop's guidance was essential to our understanding of the college application process. His patience and constant encouragement and attention are what truly make him stand apart from other counselors. He helped us narrow down the potential universities I should apply to based on my major.",
       rating: 5,
     },
   ]
@@ -646,9 +636,9 @@ function TestimonialsSection() {
 
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">What Our Students Say</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Testimonials</h2>
           <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-            Real success stories from students who achieved their college dreams
+            success stories from students  who achieved their college dreams
           </p>
         </div>
 
@@ -669,8 +659,8 @@ function TestimonialsSection() {
 
               <div className="space-y-2">
                 <p className="text-amber-400 font-bold text-lg">{testimonials[currentTestimonial].name}</p>
-                <p className="text-slate-300">
-                  {testimonials[currentTestimonial].grade} • Accepted to {testimonials[currentTestimonial].college}
+                <p className="text-blue-400">
+                  {testimonials[currentTestimonial].title}
                 </p>
               </div>
             </div>
