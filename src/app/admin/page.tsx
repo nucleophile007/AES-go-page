@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
-import { Search, Users, Phone, Filter, CheckCircle } from "lucide-react"
+import { Search, Users, Phone, Filter, CheckCircle, Loader2 } from "lucide-react"
 
 
 interface WebinarRegistration {
@@ -29,6 +29,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedProgram, setSelectedProgram] = useState("all")
+  const [approving, setApproving] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (status !== 'authenticated') return
@@ -72,14 +73,23 @@ export default function AdminPage() {
   const programs = [...new Set(data.map((reg) => reg.program))]
 
   const approve = async (id: number) => {
-    const res = await fetch(`/api/admin/registrations/${id}/approve`, { method: 'POST' })
-    if (!res.ok) {
+    setApproving(prev => new Set(prev).add(id))
+    try {
+      const res = await fetch(`/api/admin/registrations/${id}/approve`, { method: 'POST' })
+      if (!res.ok) throw new Error('Approve failed')
+      const json = await res.json()
+      const updated = json.registration as WebinarRegistration
+      setData(prev => prev.map(r => r.id === updated.id ? { ...r, approved: updated.approved } : r))
+    } catch (e) {
+      console.error(e)
       alert('Approve failed')
-      return
+    } finally {
+      setApproving(prev => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
     }
-    const json = await res.json()
-    const updated = json.registration as WebinarRegistration
-    setData(prev => prev.map(r => r.id === updated.id ? { ...r, approved: updated.approved } : r))
   }
 
   if (status === "loading" || loading) return <p>Loading...</p>
@@ -215,11 +225,11 @@ export default function AdminPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          className={`text-sm px-3 py-1 rounded ${reg.approved ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-                          disabled={reg.approved}
+                          className={`text-sm px-3 py-1 rounded inline-flex items-center gap-2 ${reg.approved || approving.has(reg.id) ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                          disabled={reg.approved || approving.has(reg.id)}
                           onClick={() => approve(reg.id)}
                         >
-                          Approve
+                          {approving.has(reg.id) ? (<><Loader2 className="h-4 w-4 animate-spin" /> Approving...</>) : 'Approve'}
                         </button>
                       </td>
                     </tr>

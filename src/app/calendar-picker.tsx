@@ -77,8 +77,26 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
   const isDateAvailable = (day: number) => Object.prototype.hasOwnProperty.call(dateTimeMapping, formatDate(day))
   const getAvailableTimesForDate = (date: string) => dateTimeMapping[date] || []
 
+  // Parse a time string like "9:00 AM" or "12:30 pm" to minutes since midnight
+  const timeStringToMinutes = (input: string) => {
+    const s = input.trim()
+    // If a range like "9:00 AM - 9:30 AM" is ever provided, take the first part
+    const firstPart = s.split(/[–-]/)[0].trim()
+    const match = firstPart.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp][Mm])$/)
+    if (!match) return Number.MAX_SAFE_INTEGER
+    let hours = parseInt(match[1], 10)
+    const minutes = parseInt(match[2] || "0", 10)
+    const meridiem = match[3].toUpperCase()
+    if (hours === 12) hours = 0
+    if (meridiem === "PM") hours += 12
+    return hours * 60 + minutes
+  }
+
   const days = getDaysInMonth(currentMonth)
   const availableTimesForSelectedDate = getAvailableTimesForDate(selectedDate)
+  const sortedTimesForSelectedDate = [...availableTimesForSelectedDate].sort(
+    (a, b) => timeStringToMinutes(a) - timeStringToMinutes(b)
+  )
 
   return (
     <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
@@ -133,8 +151,8 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
           <h5 className="font-bold text-gray-800 mb-4 text-lg">Available Times</h5>
           {selectedDate ? (
             <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
-              {availableTimesForSelectedDate.length > 0 ? (
-                availableTimesForSelectedDate.map((time) => (
+              {sortedTimesForSelectedDate.length > 0 ? (
+                sortedTimesForSelectedDate.map((time) => (
                   <button key={time} type="button" onClick={() => onTimeSelect(time)} className={`w-full px-5 py-4 text-sm font-semibold rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
                       selectedTime === time
                         ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white border-blue-600 shadow-lg shadow-blue-500/30"
