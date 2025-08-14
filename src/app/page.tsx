@@ -2,6 +2,7 @@
 import Image from "next/image"
 import type React from "react"
 import { useState, useEffect } from "react"
+import useSWR from 'swr'
 import { CalendarPicker } from "@/app/calendar-picker"
 
 export default function Home() {
@@ -206,14 +207,23 @@ function WebinarSection() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [availability, setAvailability] = useState<Record<string, string[]>>({})
 
+  const fetcher = (url: string) => fetch(url).then(res => res.json())
+  const { data: availabilityData } = useSWR('/api/availability', fetcher, {
+    refreshInterval: 15000,
+    revalidateOnFocus: true,
+    dedupingInterval: 5000,
+  })
+  const availability: Record<string, string[]> = availabilityData?.availability || {}
+
+  // If the selected time was removed by admin, clear it
   useEffect(() => {
-    fetch('/api/availability')
-      .then(res => res.json())
-      .then(json => setAvailability(json.availability || {}))
-      .catch(() => setAvailability({}))
-  }, [])
+    if (!formData.selectedDate || !formData.selectedTime) return
+    const times = availability[formData.selectedDate] || []
+    if (!times.includes(formData.selectedTime)) {
+      setFormData(prev => ({ ...prev, selectedTime: "" }))
+    }
+  }, [availability, formData.selectedDate, formData.selectedTime])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
