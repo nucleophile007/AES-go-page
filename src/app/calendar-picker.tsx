@@ -16,15 +16,8 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
   const [currentMonth, setCurrentMonth] = useState(new Date(2025, 7)) // August 2025
 
   const dateTimeMapping: { [key: string]: string[] } = {
-    "8/16/2025": ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM"],
-    "8/17/2025": ["10:00 AM", "01:00 PM", "03:00 PM", "05:00 PM"],
-    "8/23/2025": ["09:00 AM", "12:00 PM", "03:00 PM"],
-    "9/5/2025": ["10:00 AM", "02:00 PM", "04:00 PM", "06:00 PM"],
-    "9/12/2025": ["09:00 AM", "11:00 AM", "01:00 PM"],
-    "9/19/2025": ["10:00 AM", "03:00 PM", "05:00 PM"],
-    "10/8/2025": ["09:00 AM", "12:00 PM", "02:00 PM", "04:00 PM"],
-    "10/15/2025": ["11:00 AM", "01:00 PM", "03:00 PM"],
-    "10/22/2025": ["10:00 AM", "02:00 PM", "05:00 PM"],
+    "8/16/2025": ["11:00 AM", "12:00 AM", "01:00 PM", "02:00 PM"],
+    "8/17/2025": ["04:00 PM", "05:00 PM", "06:00 PM"],
   }
 
   const monthNames = [

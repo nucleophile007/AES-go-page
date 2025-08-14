@@ -413,7 +413,7 @@ function WebinarSection() {
                   </div>
 
                    <div>
-                    <label className="block text-slate-800 font-medium mb-2">Email *</label>
+                    <label className="block text-slate-800 font-medium mb-2">Student&apos;s Email *</label>
                     <input
                       type="email"
                       name="email"
