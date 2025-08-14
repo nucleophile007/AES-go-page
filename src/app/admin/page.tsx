@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
+import Link from "next/link"
 import { Search, Users, Phone, Filter, CheckCircle, Loader2 } from "lucide-react"
 
 
@@ -111,10 +112,18 @@ export default function AdminPage() {
                 <p className="text-sm text-gray-500">Manage and view all registration data</p>
               </div>
             </div>
-            <div className="bg-blue-50 px-4 py-2 rounded-lg">
-              <span className="text-sm font-medium text-blue-700">
-                Total Registrations: <span className="font-bold">{data.length}</span>
-              </span>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/admin/availability"
+                className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Manage Availability
+              </Link>
+              <div className="bg-blue-50 px-4 py-2 rounded-lg">
+                <span className="text-sm font-medium text-blue-700">
+                  Total Registrations: <span className="font-bold">{data.length}</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
