@@ -206,6 +206,14 @@ function WebinarSection() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [availability, setAvailability] = useState<Record<string, string[]>>({})
+
+  useEffect(() => {
+    fetch('/api/availability')
+      .then(res => res.json())
+      .then(json => setAvailability(json.availability || {}))
+      .catch(() => setAvailability({}))
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -495,8 +503,9 @@ function WebinarSection() {
                   <CalendarPicker
                     selectedDate={formData.selectedDate}
                     selectedTime={formData.selectedTime}
-                    onDateSelect={(date) => setFormData((prev) => ({ ...prev, selectedDate: date }))}
-                    onTimeSelect={(time) => setFormData((prev) => ({ ...prev, selectedTime: time }))}
+                    onDateSelect={(date: string) => setFormData((prev) => ({ ...prev, selectedDate: date }))}
+                    onTimeSelect={(time: string) => setFormData((prev) => ({ ...prev, selectedTime: time }))}
+                    dateTimeMapping={availability}
                   />
 
                   <div className="bg-amber-100/50 p-4 rounded-lg border border-amber-200">
@@ -508,18 +517,8 @@ function WebinarSection() {
                   </div>
 
                   <div className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={prevStep}
-                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 px-8 rounded-lg transition-all duration-300"
-                    >
-                      ← Back
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || !canSubmit}
-                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
+                    <button type="button" onClick={prevStep} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 px-8 rounded-lg transition-all duration-300">← Back</button>
+                    <button type="submit" disabled={isSubmitting || !canSubmit} className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                       {isSubmitting ? "Submitting..." : "Book now"}
                     </button>
                   </div>

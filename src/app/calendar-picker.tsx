@@ -10,15 +10,11 @@ interface CalendarPickerProps {
   selectedTime: string
   onDateSelect: (date: string) => void
   onTimeSelect: (time: string) => void
+  dateTimeMapping: Record<string, string[]>
 }
 
-export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTimeSelect }: CalendarPickerProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 7)) // August 2025
-
-  const dateTimeMapping: { [key: string]: string[] } = {
-    "8/16/2025": ["11:00 AM", "12:00 AM", "01:00 PM", "02:00 PM"],
-    "8/17/2025": ["04:00 PM", "05:00 PM", "06:00 PM"],
-  }
+export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTimeSelect, dateTimeMapping }: CalendarPickerProps) {
+  const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const monthNames = [
     "January",
@@ -45,7 +41,7 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
 
-    const days = []
+    const days: Array<number | null> = []
 
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
@@ -65,13 +61,9 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
     e.stopPropagation()
 
     setCurrentMonth((prev) => {
-      const newMonth = new Date(prev)
-      if (direction === "prev") {
-        newMonth.setMonth(prev.getMonth() - 1)
-      } else {
-        newMonth.setMonth(prev.getMonth() + 1)
-      }
-      return newMonth
+      const n = new Date(prev)
+      n.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1))
+      return n
     })
   }
 
@@ -81,18 +73,9 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
     return `${month}/${day}/${year}`
   }
 
-  const isSelectedDate = (day: number) => {
-    return selectedDate === formatDate(day)
-  }
-
-  const isDateAvailable = (day: number) => {
-    const dateKey = formatDate(day)
-    return dateTimeMapping.hasOwnProperty(dateKey)
-  }
-
-  const getAvailableTimesForDate = (date: string) => {
-    return dateTimeMapping[date] || []
-  }
+  const isSelectedDate = (day: number) => selectedDate === formatDate(day)
+  const isDateAvailable = (day: number) => Object.prototype.hasOwnProperty.call(dateTimeMapping, formatDate(day))
+  const getAvailableTimesForDate = (date: string) => dateTimeMapping[date] || []
 
   const days = getDaysInMonth(currentMonth)
   const availableTimesForSelectedDate = getAvailableTimesForDate(selectedDate)
@@ -105,39 +88,20 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Calendar Section */}
         <div className="lg:col-span-2">
-          {/* Month Navigation */}
           <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              type="button"
-              onClick={(e) => navigateMonth("prev", e)}
-              className="p-3 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-all duration-200"
-            >
+            <Button variant="ghost" size="sm" type="button" onClick={(e) => navigateMonth("prev", e)} className="p-3 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-all duration-200">
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <h4 className="text-xl font-bold text-gray-800">
-              {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-            </h4>
-            <Button
-              variant="ghost"
-              size="sm"
-              type="button"
-              onClick={(e) => navigateMonth("next", e)}
-              className="p-3 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-all duration-200"
-            >
+            <h4 className="text-xl font-bold text-gray-800">{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h4>
+            <Button variant="ghost" size="sm" type="button" onClick={(e) => navigateMonth("next", e)} className="p-3 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-all duration-200">
               <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
 
-          {/* Days of Week Header */}
           <div className="grid grid-cols-7 gap-2 mb-4">
             {daysOfWeek.map((day) => (
-              <div key={day} className="text-center text-sm font-semibold text-gray-500 py-3">
-                {day}
-              </div>
+              <div key={day} className="text-center text-sm font-semibold text-gray-500 py-3">{day}</div>
             ))}
           </div>
 
@@ -147,12 +111,7 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
                 {day && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (isDateAvailable(day)) {
-                        onDateSelect(formatDate(day))
-                        onTimeSelect("") // Clear time when selecting a new date
-                      }
-                    }}
+                    onClick={() => { if (isDateAvailable(day)) { onDateSelect(formatDate(day)); onTimeSelect("") } }}
                     disabled={!isDateAvailable(day)}
                     className={`w-12 h-12 flex items-center justify-center text-sm font-semibold rounded-full transition-all duration-300 transform hover:scale-105 ${
                       isSelectedDate(day)
@@ -176,16 +135,11 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
             <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
               {availableTimesForSelectedDate.length > 0 ? (
                 availableTimesForSelectedDate.map((time) => (
-                  <button
-                    key={time}
-                    type="button"
-                    onClick={() => onTimeSelect(time)}
-                    className={`w-full px-5 py-4 text-sm font-semibold rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
+                  <button key={time} type="button" onClick={() => onTimeSelect(time)} className={`w-full px-5 py-4 text-sm font-semibold rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
                       selectedTime === time
                         ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white border-blue-600 shadow-lg shadow-blue-500/30"
                         : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer shadow-sm hover:shadow-md"
-                    }`}
-                  >
+                    }`}>
                     {time}
                   </button>
                 ))
@@ -196,12 +150,8 @@ export function CalendarPicker({ selectedDate, selectedTime, onDateSelect, onTim
           ) : (
             <p className="text-gray-500 text-center py-4">Please select a date first</p>
           )}
-
-          {/* Timezone Note */}
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
-              All times shown are in Silicon Valley timezone (PST/PDT)
-            </p>
+            <p className="text-xs text-gray-500 text-center">All times shown are in Silicon Valley timezone (PST/PDT)</p>
           </div>
         </div>
       </div>
