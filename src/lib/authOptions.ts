@@ -1,8 +1,10 @@
 // src/lib/authOptions.ts
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
+import { allowedEmails as allowedFromEnv } from "./adminConfig"
 
-export const allowedEmails = ["dkdps3212@gmail.com", "biharteacherconnect@gmail.com"]
+const fallbackAllowed = ["dkdps3212@gmail.com", "acharya.folsom@getMaxListeners.com"]
+export const allowedEmails = allowedFromEnv.length ? allowedFromEnv : fallbackAllowed
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,11 +15,11 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user }) {
-      return allowedEmails.includes(user.email || "")
+      return allowedEmails.includes((user.email || "").toLowerCase())
     },
     async session({ session }) {
       if (session.user?.email) {
-        session.user.role = allowedEmails.includes(session.user.email) ? "admin" : "user"
+        session.user.role = allowedEmails.includes(session.user.email.toLowerCase()) ? "admin" : "user"
       }
       return session
     },
