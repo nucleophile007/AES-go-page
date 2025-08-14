@@ -1,18 +1,14 @@
 "use client"
 import Image from "next/image"
 import type React from "react"
-
-import { useState,useEffect } from "react"
+import { useState, useEffect } from "react"
+import { CalendarPicker } from "@/app/calendar-picker"
 
 export default function Home() {
   return (
     <div className="min-h-[100dvh] bg-[#1a2b4d] text-slate-200 scroll-smooth">
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
-        // style={{
-        //   backgroundImage:
-        //     "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-H3z1E0pXONaInVX8B9QLf50IkriJh7.png')",
-        // }}
       />
 
       <div className="relative z-10 min-h-screen">
@@ -205,7 +201,7 @@ function WebinarSection() {
     grade: "",
     schoolName: "",
     programInterested: "College Prep", // Default to College Prep as required
-    selectedDay: "",
+    selectedDate: "",
     selectedTime: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -230,7 +226,7 @@ function WebinarSection() {
           studentGrade: formData.grade,
           schoolName: formData.schoolName,
           program: formData.programInterested,
-          preferredTime: `${formData.selectedDay} at ${formData.selectedTime}`,
+          preferredTime: `${formData.selectedDate} at ${formData.selectedTime}`,
         }),
       })
 
@@ -250,7 +246,7 @@ function WebinarSection() {
             grade: "",
             schoolName: "",
             programInterested: "College Prep",
-            selectedDay: "",
+            selectedDate: "",
             selectedTime: "",
           })
         }, 10000)
@@ -281,7 +277,7 @@ function WebinarSection() {
     formData.studentName &&
     formData.grade &&
     formData.schoolName
-  const canSubmit = canProceedStep1 && formData.selectedDay && formData.selectedTime
+  const canSubmit = canProceedStep1 && formData.selectedDate && formData.selectedTime
 
   return (
     <section id="webinar-form" className="w-full py-16 relative overflow-hidden">
@@ -338,7 +334,7 @@ function WebinarSection() {
                     </p>
                     <div className="space-y-2 text-left bg-blue-50 p-4 rounded-lg">
                       <p className="text-blue-800 flex items-center gap-2">
-                        <span className="text-lg">📅</span> Requested for {formData.selectedDay} at {formData.selectedTime}
+                        <span className="text-lg">📅</span> Requested for {formData.selectedDate} at {formData.selectedTime}
                       </p>
                       <p className="text-blue-800 flex items-center gap-2">
                         <span className="text-lg">📞</span> Our team will contact you soon
@@ -417,7 +413,7 @@ function WebinarSection() {
                   </div>
 
                    <div>
-                    <label className="block text-slate-800 font-medium mb-2">Email *</label>
+                    <label className="block text-slate-800 font-medium mb-2">Student&apos;s Email *</label>
                     <input
                       type="email"
                       name="email"
@@ -496,45 +492,12 @@ function WebinarSection() {
                     <p className="text-slate-500 text-sm mt-1">College Prep program is required for all students</p>
                   </div>
 
-                  <div>
-                    <label className="block text-slate-800 font-medium mb-2">Choose a day *</label>
-                    <div className="grid grid-cols-2 gap-4">
-                      {["Saturday", "Sunday"].map((day) => (
-                        <button
-                          key={day}
-                          type="button"
-                          onClick={() => setFormData((prev) => ({ ...prev, selectedDay: day }))}
-                          className={`px-6 py-4 rounded-lg font-medium transition-all duration-200 ${
-                            formData.selectedDay === day
-                              ? "bg-gradient-to-r from-amber-400 to-orange-500 text-black"
-                              : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-                          }`}
-                        >
-                          {day}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-800 font-medium mb-2">Select a time *</label>
-                    <div className="grid grid-cols-2 gap-4">
-                      {["11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM"].map((time) => (
-                        <button
-                          key={time}
-                          type="button"
-                          onClick={() => setFormData((prev) => ({ ...prev, selectedTime: time }))}
-                          className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                            formData.selectedTime === time
-                              ? "bg-gradient-to-r from-amber-400 to-orange-500 text-black"
-                              : "bg-slate-700 text-slate-300 hover:bg-slate-600"
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <CalendarPicker
+                    selectedDate={formData.selectedDate}
+                    selectedTime={formData.selectedTime}
+                    onDateSelect={(date) => setFormData((prev) => ({ ...prev, selectedDate: date }))}
+                    onTimeSelect={(time) => setFormData((prev) => ({ ...prev, selectedTime: time }))}
+                  />
 
                   <div className="bg-amber-100/50 p-4 rounded-lg border border-amber-200">
                     <p className="text-slate-700 text-sm">
