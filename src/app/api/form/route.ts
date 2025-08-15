@@ -23,9 +23,17 @@ export async function POST(req: Request) {
 
     console.log("✅ Registration saved:", registration.id);
 
+    // Publish separate jobs - Google Sheets first (no retry), then emails (can retry)
     await qstash.publishJSON({
-      url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/jobs/sendmailandsheet`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/jobs/update-sheet`,
       body,
+      retries: 3, // No retries for sheets to avoid duplicates
+    });
+
+    await qstash.publishJSON({
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/jobs/send-emails`,
+      body,
+      retries: 3, // Allow retries for emails
     });
 
     return Response.json({ message: 'Registration successful' }, { status: 200 });

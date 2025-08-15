@@ -25,31 +25,7 @@ async function handler(req: Request) {
       schoolName,
     } = await req.json();
 
-    console.log("📨 Processing job for:", studentName);
-
-    // Google Sheets
-    try {
-      const sheetRes = await fetch(process.env.GOOGLE_SCRIPT_URL!, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          parentName,
-          parentEmail,
-          parentContact,
-          studentName,
-          studentGrade,
-          program,
-          preferredTime,
-          schoolName
-        }),
-      });
-
-      if (!sheetRes.ok) throw new Error(`Google Sheets returned ${sheetRes.status}`);
-      console.log("✅ Google Sheets updated");
-    } catch (err) {
-      console.error("❌ Google Sheets Error:", err);
-    }
+    console.log("📧 Processing email job for:", studentName);
 
     // Admin Email
     await transporter.sendMail({
@@ -84,8 +60,8 @@ async function handler(req: Request) {
     console.log("✅ Emails sent successfully");
     return Response.json({ success: true });
   } catch (error) {
-    console.error("❌ Email/Sheet job failed:", error);
-    return Response.json({ error: 'Failed to send job' }, { status: 500 });
+    console.error("❌ Email job failed:", error);
+    return Response.json({ error: 'Failed to send emails' }, { status: 500 });
   }
 }
 
