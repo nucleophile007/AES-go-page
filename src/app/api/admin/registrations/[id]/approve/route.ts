@@ -33,7 +33,14 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   // Remove the booked slot from availability
   const { date, time } = parsePreferred(reg.preferredTime)
   if (date && time) {
-    const day = await prisma.availabilityDay.findUnique({ where: { date } })
+    const day = await prisma.availabilityDay.findUnique({ 
+      where: { 
+        date_program: { 
+          date, 
+          program: reg.program 
+        } 
+      } 
+    })
     if (day) {
       const currentTimes = (day.times as string[]) || []
       const nextTimes = currentTimes.filter((t) => t !== time)

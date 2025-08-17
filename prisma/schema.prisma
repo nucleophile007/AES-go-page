@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+// This Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
@@ -9,11 +9,12 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
- datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-     directUrl = env("DIRECT_URL")
-   }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
 model WebinarRegistration {
   id           Int      @id @default(autoincrement())
   email        String
@@ -23,7 +24,7 @@ model WebinarRegistration {
   studentName  String
   grade        String
   schoolName   String
-  program      String
+  program      String   @default("College Prep") // Default to College Prep program
   preferredTime String
   createdAt    DateTime @default(now())
   approved     Boolean  @default(false)
@@ -32,9 +33,14 @@ model WebinarRegistration {
 model AvailabilityDay {
   id        Int      @id @default(autoincrement())
   // Store date as string in M/D/YYYY to match frontend calendar keys (e.g., "8/16/2025")
-  date      String   @unique
+  date      String
   // Times are strings like "09:00 AM", "10:00 AM" (1-hour intervals)
   times     Json
+  // Program this availability is for (focused on College Prep)
+  program   String   @default("College Prep")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Combination of date and program should be unique
+  @@unique([date, program])
 }

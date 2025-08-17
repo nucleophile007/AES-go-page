@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
 const hours = Array.from({ length: 24 }, (_, i) => i) // 0..23
 function toLabel(h: number) {
@@ -13,6 +13,7 @@ function toLabel(h: number) {
 }
 
 export default function AdminAvailabilityPage() {
+  const selectedProgram = "College Prep" // Fixed to College Prep only
   const [selectedDate, setSelectedDate] = useState<string>("")
   const [selectedTimes, setSelectedTimes] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -58,26 +59,31 @@ export default function AdminAvailabilityPage() {
   }
   const calendarDays = getDaysInMonth(currentMonth)
 
-  // Initial load of availability (auth is gated by server layout & middleware)
-  useEffect(() => {
-    let cancelled = false
+  // Load availability for College Prep program
+  const loadAvailabilityForProgram = async (program: string) => {
     setInitialLoading(true)
-    fetch('/api/admin/availability')
-      .then(r => {
-        if (!r.ok) throw new Error('Failed to load availability')
-        return r.json()
-      })
-      .then(json => {
-        if (cancelled) return
-        const map: Record<string, string[]> = {}
-        for (const d of json.days || []) map[d.date] = d.times || []
-        setDays(map)
-        setDraftDays(map)
-      })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setInitialLoading(false) })
-    return () => { cancelled = true }
-  }, [])
+    try {
+      const res = await fetch(`/api/admin/availability?program=${encodeURIComponent(program)}`)
+      if (!res.ok) throw new Error('Failed to load availability')
+      const json = await res.json()
+      const map: Record<string, string[]> = {}
+      for (const d of json.days || []) map[d.date] = d.times || []
+      setDays(map)
+      setDraftDays(map)
+      setDirtyDates(new Set())
+    } catch (error) {
+      console.error('Failed to load availability:', error)
+      setDays({})
+      setDraftDays({})
+    } finally {
+      setInitialLoading(false)
+    }
+  }
+
+  // Initial load for College Prep
+  useEffect(() => {
+    loadAvailabilityForProgram(selectedProgram)
+  }, [selectedProgram])
 
   // When changing selectedDate, show draft values
   useEffect(() => {
@@ -104,10 +110,12 @@ export default function AdminAvailabilityPage() {
     try {
       const payload = Array.from(dirtyDates).map(date => ({
         date,
-        times: (draftDays[date] || []).slice().sort((a,b)=>a.localeCompare(b))
+        times: (draftDays[date] || []).slice().sort((a: string, b: string) => a.localeCompare(b)),
+        program: selectedProgram
       }))
       const res = await fetch('/api/admin/availability', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
       if (!res.ok) throw new Error('Save failed')
@@ -131,39 +139,80 @@ export default function AdminAvailabilityPage() {
       }
     } catch (e) {
       console.error(e)
-      alert('Failed to save some availability')
+      alert('Failed to save availability')
     } finally {
       setLoading(false)
     }
   }
 
-  if (initialLoading) return <div className="max-w-5xl mx-auto p-6">Loading...</div>
+  if (initialLoading) return <div className="max-w-7xl mx-auto p-6">Loading...</div>
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Manage Availability</h1>
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Navigation Breadcrumb */}
+      <div className="mb-6">
+        <Link 
+          href="/admin" 
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Registrations
+        </Link>
+        <h1 className="text-3xl font-bold mb-2">Manage College Prep Availability</h1>
+        <p className="text-gray-600">Set available time slots for College Prep program</p>
+      </div>
 
-      <div className="flex items-center gap-3 mb-4 text-sm text-gray-600">
-        <span className="inline-flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500"/> has slots</span>
-        {dirtyDates.size > 0 && <span className="inline-flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-amber-500"/> unsaved changes</span>}</div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Calendar column */}
-        <div className="bg-white rounded-2xl border p-4">
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="sm" type="button" onClick={(e)=>navigateMonth('prev', e)} className="p-2">
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <h4 className="text-lg font-semibold">{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h4>
-            <Button variant="ghost" size="sm" type="button" onClick={(e)=>navigateMonth('next', e)} className="p-2">
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+      {/* Current Program Indicator */}
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-blue-900">Managing: {selectedProgram}</h3>
+            <p className="text-sm text-blue-700">Set available time slots for College Prep sessions</p>
           </div>
-          <div className="grid grid-cols-7 gap-2 mb-2">
+          <div className="flex items-center gap-3 text-sm text-blue-600">
+            <span className="inline-flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500"/> has slots
+            </span>
+            {dirtyDates.size > 0 && (
+              <span className="inline-flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500"/> unsaved changes
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Calendar column */}
+        <div className="bg-white rounded-2xl border shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <button 
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              type="button" 
+              onClick={(e: React.MouseEvent)=>navigateMonth('prev', e)}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <h4 className="text-xl font-semibold">
+              {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+            </h4>
+            <button 
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              type="button" 
+              onClick={(e: React.MouseEvent)=>navigateMonth('next', e)}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-7 gap-2 mb-3">
             {daysOfWeek.map(d => (
-              <div key={d} className="text-center text-xs font-medium text-gray-500 py-1">{d}</div>
+              <div key={d} className="text-center text-sm font-medium text-gray-500 py-2">
+                {d}
+              </div>
             ))}
           </div>
+          
           <div className="grid grid-cols-7 gap-2">
             {calendarDays.map((day, idx) => (
               <div key={idx} className="aspect-square flex items-center justify-center">
@@ -171,16 +220,16 @@ export default function AdminAvailabilityPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedDate(formatDate(day))}
-                    className={`w-10 h-10 rounded-full text-sm font-semibold transition-all ${
+                    className={`w-12 h-12 rounded-full text-sm font-semibold transition-all ${
                       isSelectedDate(day)
-                        ? 'bg-blue-600 text-white shadow'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-blue-50'
+                        ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-300'
+                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-blue-50 hover:border-blue-300'
                     }`}
                   >
                     <span className="relative">
                       {day}
                       {dayHasAvailability(day) && (
-                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full" />
+                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-green-500 rounded-full" />
                       )}
                     </span>
                   </button>
@@ -191,15 +240,21 @@ export default function AdminAvailabilityPage() {
         </div>
 
         {/* Times column */}
-        <div className="bg-white rounded-2xl border p-4">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-2xl border shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-semibold">Selected date</h2>
-              <p className="text-sm text-gray-600">{selectedDate || 'None'}</p>
+              <h2 className="text-xl font-semibold">Time Slots</h2>
+              <p className="text-sm text-gray-600">
+                {selectedDate ? `Selected: ${selectedDate}` : 'Select a date from calendar'}
+              </p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={saveAll} disabled={loading || dirtyDates.size === 0}>Save All</Button>
-            </div>
+            <button 
+              onClick={saveAll} 
+              disabled={loading || dirtyDates.size === 0}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? 'Saving...' : `Save All ${dirtyDates.size > 0 ? `(${dirtyDates.size})` : ''}`}
+            </button>
           </div>
 
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -211,7 +266,11 @@ export default function AdminAvailabilityPage() {
                   key={h}
                   type="button"
                   onClick={()=>toggleTime(label)}
-                  className={`px-3 py-2 rounded border text-sm ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'}`}
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    active 
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
+                      : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400'
+                  }`}
                   disabled={!selectedDate}
                 >
                   {label}
@@ -221,12 +280,26 @@ export default function AdminAvailabilityPage() {
           </div>
 
           {selectedDate && (
-            <div className="mt-6">
-              <h3 className="font-medium">Selected for {selectedDate}</h3>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {selectedTimes.sort((a,b)=>a.localeCompare(b)).map(t => (
-                  <span key={t} className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">{t}</span>
-                ))}
+            <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold mb-3">
+                Selected Times for {selectedDate}
+                <span className="ml-2 text-sm font-normal text-blue-600">
+                  ({selectedProgram})
+                </span>
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedTimes.length > 0 ? (
+                  selectedTimes.sort((a,b)=>a.localeCompare(b)).map(t => (
+                    <span 
+                      key={t} 
+                      className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 font-medium"
+                    >
+                      {t}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-gray-500 text-sm">No times selected</span>
+                )}
               </div>
             </div>
           )}
