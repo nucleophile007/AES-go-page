@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# temporary drive files
+.tmp.driveupload
+.tmp.drivedownload
